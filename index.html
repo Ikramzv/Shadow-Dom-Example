@@ -1,0 +1,124 @@
+[03:58, 28/03/2023] Ikram:
+<DOCTYPE html />
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width , initial-scale=1.0" />
+    <title>Project</title>
+</head>
+
+<body>
+    <custom-modal span-style="color: red; background: black;" text="Hello world" />
+    <button modal-open>Open</button>
+</body>
+<script>
+    const btn = document.querySelector("button[modal-open]")
+    const modal = document.querySelector("custom-modal")
+
+    btn.addEventListener("click", () => {
+        modal.open = true
+    })
+
+    class CustomModal extends HTMLElement {
+        constructor() {
+            super()
+
+            const shadow = this.attachShadow({ mode: "open" })
+
+            this.container = document.createElement("div")
+            this.container.setAttribute("class", "container")
+
+            const span = document.createElement("span")
+            const spanStyle = this.getAttribute("span-style")
+
+            const close = document.createElement("button")
+            close.innerHTML = "Close"
+            close.setAttribute("class", "close")
+
+            close.onclick = () => this.open = false
+
+            this.styleEl = document.createElement("style")
+
+            spanStyle.split(";").forEach(style => {
+                const [prop, value] = style.split(":")
+                span.style[prop] = value
+            })
+
+            const text = this.getAttribute("text")
+            span.innerHTML = text
+
+            const isOpen = this.getAttribute("open") != null ? true : false
+
+            if (isOpen) this.container.classList.add("open")
+
+            this.styleEl.textContent = this.styles(isOpen)
+
+            shadow.appendChild(this.styleEl)
+            shadow.appendChild(this.container)
+            this.container.appendChild(span)
+            this.container.appendChild(close)
+
+            this.open = isOpen
+        }
+
+        styles() {
+            return `
+                    .container {
+                        position: fixed;
+                        background: rgba(0,0,0,0.6);
+                        inset: 0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        opacity: 0;
+                        transition: 200ms ease opacity;
+                        z-index: -1;
+                    }
+
+                    .container.open {
+                        opacity: 1;
+                        z-index: 99999;
+                    }
+
+                    .close {
+                        position: absolute;
+                        width: fit-content;
+                        right: 100px;
+                        top: 100px;
+                        padding: 8px 12px;
+                        border: 1px solid crimson;
+                        color: crimson;
+                        background: transparent;
+                        cursor: pointer;
+                        transition: 200ms ease;
+                    }
+
+                    .close:hover {
+                        background: crimson;
+                        color: white;
+                    }
+                `
+        }
+        // Reactive property : 
+        // when it is edited , based on value that will be cast to boolean 
+        // it will toggle 'open' class of the container element
+        // For Example : 
+        // document.querySelector("custom-modal").open = null // it will remove 'open' class
+        // document.querySelector("custom-modal").open = true // it will add 'open' class
+        set open(val) {
+            val = !!val
+            this.container.classList.toggle("open", val)
+        }
+    }
+
+
+    // Shadow host : The DOM node that the shadow DOM is attached to ;
+    // Shadow tree : The DOM tree inside the shadow DOM
+    // Shadow root : The root node of the shadow tree
+
+    customElements.define("custom-modal", CustomModal)
+
+</script>
+
+</html>
